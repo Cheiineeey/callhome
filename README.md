@@ -55,7 +55,7 @@ Browser (PWA)                    Server (self-hosted)
 ## Roadmap
 
 - [ ] Pluggable gateway (persona/keys as config)
-- [ ] Call UI (PWA): frosted incoming-call card, live call screen, quick-decline
+- [ ] Call UI (PWA): frosted incoming-call card, live call screen, quick-decline — design prototype already in [ui-concept/](ui-concept/)
 - [ ] Quickstart: clone → configure → first call in 15 minutes
 - [ ] Morning voice notes, bedtime radio
 
