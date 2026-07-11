@@ -46,9 +46,18 @@ Browser (PWA)                    Server (self-hosted)
                             └──────────┘
 ```
 
-## Quickstart
+## What is here today
 
-*Coming with first release.*
+- **** — runnable now: SenseVoice + librosa in one endpoint (transcription + emotion + tone cues)
+- **** — the full marker & invite protocol: dial, hangup, DND, voicemail, escalation, call records
+- **** — annotated production extracts of the marker layer
+
+## Roadmap
+
+- [ ] Pluggable gateway (persona/keys as config)
+- [ ] Call UI (PWA): frosted incoming-call card, live call screen, quick-decline
+- [ ] Quickstart: clone → configure → first call in 15 minutes
+- [ ] Morning voice notes, bedtime radio
 
 ## Put your person here
 
