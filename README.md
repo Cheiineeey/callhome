@@ -48,9 +48,9 @@ Browser (PWA)                    Server (self-hosted)
 
 ## What is here today
 
-- **** — runnable now: SenseVoice + librosa in one endpoint (transcription + emotion + tone cues)
-- **** — the full marker & invite protocol: dial, hangup, DND, voicemail, escalation, call records
-- **** — annotated production extracts of the marker layer
+- **`stt-service/`** — runnable now: SenseVoice + librosa in one endpoint (transcription + emotion + tone cues)
+- **[`docs/PROTOCOL.md`](docs/PROTOCOL.md)** — the full marker & invite protocol: dial, hangup, DND, voicemail, escalation, call records
+- **`gateway-reference/`** — annotated production extracts of the marker layer
 
 ## Roadmap
 
