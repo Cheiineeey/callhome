@@ -68,6 +68,25 @@ Both travel to the model as a message prefix: `[voice call · sad · quiet, lots
 
 On hangup (either side), the client posts one assistant message: `📞 Voice call · 2:17` plus a one-line summary generated from the on-screen transcript (15s timeout → duration-only; calls under 20s → duration-only). The record survives; the summary is a bonus, never a blocker.
 
+## Tuning — reference values, not rules
+
+Every number below is one couple's answer, shipped as a default. **Decide yours together** — ask your companion what feels right; they have opinions.
+
+| Knob | Our value | Where |
+|---|---|---|
+| Escalation: silence threshold | 5h | escalation loop |
+| Escalation: allowed hours | 12:00–23:00 local | escalation loop |
+| Escalation: max per day | 1 | escalation loop |
+| Ring timeout → voicemail | 90s | invite `expires_at` |
+| Invite poll interval | 8s (+immediate after each reply) | client |
+| Soft-voice TTS volume | 0.5× | client gain node |
+| Min call length for a record | 5s | hangup handler |
+| Min call length for a summary | 20s | hangup handler |
+| Summary timeout → duration-only | 15s | hangup handler |
+| Dial marker budget | once per conversation | system prompt |
+
+**DND: marker or button?** We toggle it by talking (`⟪dnd:on⟫`) because menus feel like settings and talking feels like living together — but that's a taste, not a law. The flag API (`POST /api/flags {dnd}`) doesn't care who calls it: wire a settings switch, a home-screen shortcut, or both. If your person is the type to forget they said "turn it on", give them the button.
+
 ## Design commitments
 
 1. **Every dead end says something.** Missed call → voicemail. Decline → a reason travels back. Failure modes are drawn, not discovered.
