@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>incoming call · 磨砂来电卡</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;min-height:100vh;background:linear-gradient(160deg,#f6dede,#e9ccd2 55%,#d9bcc4);}
+  body.night{background:linear-gradient(165deg,#1c1a1e,#0b0b0d 70%);}
+  .backdrop{position:fixed;inset:0;background:rgba(60,44,42,.22);-webkit-backdrop-filter:blur(14px) saturate(1.1);backdrop-filter:blur(14px) saturate(1.1);}
+  body.night .backdrop{background:rgba(8,8,10,.45);}
+  .card{position:absolute;left:50%;top:44%;transform:translate(-50%,-50%);width:min(78vw,320px);
+    display:flex;flex-direction:column;align-items:center;padding:30px 24px 26px;border-radius:28px;
+    background:linear-gradient(170deg,rgba(255,250,246,.72),rgba(248,238,234,.60));
+    -webkit-backdrop-filter:blur(28px) saturate(1.25);backdrop-filter:blur(28px) saturate(1.25);
+    border:1px solid rgba(255,255,255,.55);
+    box-shadow:0 22px 70px rgba(90,60,55,.28), inset 0 1px 0 rgba(255,255,255,.6);
+    animation:cardIn .45s cubic-bezier(.2,.9,.3,1.1) both;color:#4a3f3a;}
+  body.night .card{background:linear-gradient(170deg,rgba(38,34,32,.82),rgba(20,18,17,.88));border-color:rgba(255,255,255,.12);
+    box-shadow:0 22px 70px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.08);}
+  @keyframes cardIn{from{opacity:0;transform:translate(-50%,-46%) scale(.92);}to{opacity:1;transform:translate(-50%,-50%) scale(1);}}
+  .kind{display:inline-flex;align-items:center;gap:7px;font-size:13px;color:#a08a80;letter-spacing:1.5px;}
+  body.night .kind{color:#b8a89e;}
+  .kind i{width:7px;height:7px;border-radius:50%;background:currentColor;animation:blink 1.4s ease-in-out infinite;}
+  @keyframes blink{50%{opacity:.25;}}
+  .avwrap{position:relative;width:104px;height:104px;margin-top:22px;}
+  .av{width:104px;height:104px;border-radius:50%;position:relative;z-index:2;
+    background:linear-gradient(160deg,#e8ded8,#d8cbc4);box-shadow:0 0 40px 8px rgba(217,160,143,.4);
+    display:flex;align-items:center;justify-content:center;color:rgba(120,95,88,.7);}
+  .av svg{width:44px;height:44px;}
+  .ripple{position:absolute;inset:-10px;border-radius:50%;border:1.5px solid rgba(201,138,128,.55);animation:rip 2.2s ease-out infinite;}
+  .ripple.r2{animation-delay:.7s;}.ripple.r3{animation-delay:1.4s;}
+  body.night .ripple{border-color:rgba(216,165,142,.45);}
+  @keyframes rip{from{transform:scale(1);opacity:.9;}to{transform:scale(1.55);opacity:0;}}
+  .name{font-size:20px;font-weight:600;margin-top:20px;letter-spacing:1px;}
+  body.night .name{color:#ede6e0;}
+  .reason{font-size:14px;color:#8a766e;margin-top:10px;text-align:center;line-height:1.5;}
+  body.night .reason{color:#b8a89e;}
+  .dock{margin-top:26px;display:flex;gap:56px;}
+  .btn{display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer;}
+  .ico{width:60px;height:60px;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:transform .15s;}
+  .btn:active .ico{transform:scale(.92);}
+  .ico svg{width:26px;height:26px;}
+  .acc{background:linear-gradient(160deg,#d9a08f,#c98a80);color:#fff;}
+  .dec{background:rgba(120,95,88,.12);border:1px solid rgba(120,95,88,.22);color:#7a655c;}
+  body.night .dec{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.16);color:#c9bcb4;}
+  .lab{font-size:12px;color:#8a766e;}
+  body.night .lab{color:#b8a89e;}
+  .quick{margin-top:14px;width:100%;display:none;flex-direction:column;gap:8px;animation:fade .25s ease both;}
+  .quick.show{display:flex;}
+  @keyframes fade{from{opacity:0;}to{opacity:1;}}
+  .chips{display:flex;gap:7px;justify-content:center;flex-wrap:wrap;}
+  .chip{padding:7px 13px;border-radius:999px;background:rgba(120,95,88,.10);border:1px solid rgba(120,95,88,.22);color:#7a655c;font-size:13px;cursor:pointer;}
+  body.night .chip{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.16);color:#c9bcb4;}
+  .inrow{display:flex;gap:7px;}
+  .inrow input{flex:1;padding:9px 13px;border-radius:999px;border:1px solid rgba(120,95,88,.22);background:rgba(255,255,255,.55);color:#4a3f3a;font-size:13px;outline:none;}
+  body.night .inrow input{background:rgba(255,255,255,.10);color:#ede6e0;}
+  .send{padding:9px 15px;border-radius:999px;background:linear-gradient(160deg,#d9a08f,#c98a80);color:#fff;font-size:13px;cursor:pointer;}
+  .skip{text-align:center;font-size:12px;color:#a08a80;padding:2px;cursor:pointer;}
+  .toggle{position:fixed;top:18px;right:18px;padding:8px 14px;border-radius:999px;font-size:12px;cursor:pointer;
+    background:rgba(255,255,255,.4);border:1px solid rgba(255,255,255,.5);color:#7a655c;backdrop-filter:blur(10px);}
+  body.night .toggle{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.16);color:#c9bcb4;}
+</style>
+</head>
+<body>
+  <div class="backdrop"></div>
+  <div class="toggle" onclick="document.body.classList.toggle('night')">☀ / ☾</div>
+  <div class="card">
+    <div class="kind"><i></i>incoming call</div>
+    <div class="avwrap">
+      <div class="ripple"></div><div class="ripple r2"></div><div class="ripple r3"></div>
+      <div class="av"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="8.2" r="3.6"/><path d="M4.5 20c1.2-3.6 4.1-5.4 7.5-5.4s6.3 1.8 7.5 5.4"/></svg></div>
+    </div>
+    <div class="name">对方</div>
+    <div class="reason">好几个小时没有你的消息了，有点想你，打来看看</div>
+    <div class="dock">
+      <div class="btn" onclick="document.querySelector('.quick').classList.add('show')">
+        <div class="ico dec"><svg viewBox="0 0 24 24" fill="currentColor"><g transform="rotate(135 12 12)"><path d="M6.6 10.8c1.4 2.8 3.8 5.2 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.4.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.6 21 3 13.4 3 4c0-.6.4-1 1-1h3.6c.6 0 1 .4 1 1 0 1.2.2 2.5.6 3.6.1.4 0 .8-.2 1l-3 2.2z"/></g></svg></div>
+        <div class="lab">挂断</div>
+      </div>
+      <div class="btn">
+        <div class="ico acc"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6.6 10.8c1.4 2.8 3.8 5.2 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.4.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.6 21 3 13.4 3 4c0-.6.4-1 1-1h3.6c.6 0 1 .4 1 1 0 1.2.2 2.5.6 3.6.1.4 0 .8-.2 1l-3 2.2z"/></svg></div>
+        <div class="lab">接听</div>
+      </div>
+    </div>
+    <div class="quick">
+      <div class="chips"><span class="chip">在忙</span><span class="chip">在外面</span><span class="chip">想打字聊</span></div>
+      <div class="inrow"><input type="text" maxlength="60" placeholder="或者打几个字给他…"><span class="send">发送</span></div>
+      <div class="skip">直接挂断</div>
+    </div>
+  </div>
+</body>
+</html>
