@@ -1,0 +1,7 @@
+node_modules/
+.env
+*.db
+__pycache__/
+uploads/
+*.bak*
+secrets*
