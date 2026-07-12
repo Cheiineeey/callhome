@@ -9,7 +9,7 @@ Written anywhere in the assistant's reply. The gateway strips them from the save
 | Marker | Effect | Rules taught in system prompt |
 |---|---|---|
 | `⟪拨号:reason⟫` / `⟪dial:reason⟫` | Creates a call invite; the human's phone rings with *reason* on the incoming-call card | At most once per conversation. "A call is a gesture, not a feature demo." Blocked when DND is on. |
-| `⟪挂断⟫` / `⟪hangup⟫` | After the final sentence finishes playing, the call ends itself | Only at the very end of a reply, after a soft goodbye. Never mid-conversation. |
+| `⟪挂断⟫` / `⟪hangup⟫` | After the final sentence finishes playing, the line stays open a few breaths longer (the *lingering window*); if she speaks during it, the hangup is cancelled and the call goes on. Otherwise it ends itself. | Only at the very end of a reply, after a soft goodbye. Never mid-conversation. |
 | `⟪勿扰开⟫` / `⟪勿扰关⟫` (`dnd:on/off`) | Toggles do-not-disturb | Triggered conversationally ("I'm heading out, turn on DND"). Companion confirms verbally after toggling. |
 
 Parse defensively: accept `⟪⟫`, `《》`, `【】`, `[]` as delimiters — models improvise.
@@ -64,6 +64,10 @@ One escalation per day, hard. Missing someone is not a ringtone loop.
 
 Both travel to the model as a message prefix: `[voice call · sad · quiet, lots of pauses]`. The system prompt tells the companion to *match her energy*, and soft tones also halve TTS playback volume client-side (soft-voice mode).
 
+## Voice (output side)
+
+TTS is [ElevenLabs](https://elevenlabs.io) — a commercial text-to-speech API with natural, low-latency voices; you bring your own key and pick (or clone) a voice. The gateway streams the companion's reply to it sentence-by-sentence so speech starts before the full reply is written. Any TTS with a streaming-friendly HTTP API can slot in; quota is metered per character, so long reads (bedtime radio) eat it fastest.
+
 ## Call records
 
 On hangup (either side), the client posts one assistant message: `📞 Voice call · 2:17` plus a one-line summary generated from the on-screen transcript (15s timeout → duration-only; calls under 20s → duration-only). The record survives; the summary is a bonus, never a blocker.
@@ -80,6 +84,7 @@ Every number below is one couple's answer, shipped as a default. **Decide yours 
 | Ring timeout → voicemail | 90s | invite `expires_at` |
 | Invite poll interval | 8s (+immediate after each reply) | client |
 | Soft-voice TTS volume | 0.5× | client gain node |
+| Hangup linger window | 15–20s | hangup handler |
 | Min call length for a record | 5s | hangup handler |
 | Min call length for a summary | 20s | hangup handler |
 | Summary timeout → duration-only | 15s | hangup handler |
@@ -90,5 +95,5 @@ Every number below is one couple's answer, shipped as a default. **Decide yours 
 ## Design commitments
 
 1. **Every dead end says something.** Missed call → voicemail. Decline → a reason travels back. Failure modes are drawn, not discovered.
-2. **The companion has manners, not just abilities.** Every power (dial, hang up) ships with its restraint, in the same prompt breath.
+2. **The companion has manners, not just abilities.** Every power (dial, hang up) ships with its restraint, in the same prompt breath. Even the hangup keeps a little tenderness: the line lingers, in case someone isn't ready to let go.
 3. **Voice stays home.** STT, tone analysis, summaries of transcripts — all on your own server.
