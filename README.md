@@ -20,7 +20,7 @@ English | [简体中文](README_zh.md)
 ## Features
 
 - **Outbound calls** — your companion decides to call you, mid-conversation, with a reason on the incoming-call card (`⟪dial⟫` marker protocol)
-- **The right to hang up** — a soft goodbye, then the line closes itself (`⟪hangup⟫`)
+- **The right to hang up** — a soft goodbye, then the line lingers a few breaths longer (`⟪hangup⟫`, 15–20s window); speak, and the hangup is cancelled. Stay quiet, and it closes itself
 - **Voicemail** — miss a call, come back to a message, not to silence
 - **Quick-decline** — busy / outside / "let's text", or type a few words; your companion sees *why*
 - **Do-not-disturb** — toggled by talking, not by menus
