@@ -15,8 +15,6 @@ English | [简体中文](README_zh.md)
 
 ---
 
-> 🚧 **Status: pre-release.** Being extracted from a living system. Docs and code landing soon.
-
 ## Features
 
 - **Outbound calls** — your companion decides to call you, mid-conversation, with a reason on the incoming-call card (`⟪dial⟫` marker protocol)
@@ -51,13 +49,6 @@ Browser (PWA)                    Server (self-hosted)
 - **`stt-service/`** — runnable now: SenseVoice + librosa in one endpoint (transcription + emotion + tone cues)
 - **[`docs/PROTOCOL.md`](docs/PROTOCOL.md)** — the full marker & invite protocol: dial, hangup, DND, voicemail, escalation, call records
 - **`gateway-reference/`** — annotated production extracts of the marker layer
-
-## Roadmap
-
-- [ ] Pluggable gateway (persona/keys as config)
-- [ ] Call UI (PWA): frosted incoming-call card, live call screen, quick-decline — design prototype already in [ui-concept/](ui-concept/)
-- [ ] Quickstart: clone → configure → first call in 15 minutes
-- [ ] Morning voice notes, bedtime radio
 
 ## Put your person here
 
