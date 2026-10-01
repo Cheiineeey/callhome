@@ -2,7 +2,7 @@
 
 # 📞 Callhome
 
-**给AI伴侣的开源语音通话栈。**
+**给 AI 伴侣的源码公开语音通话栈。**
 
 Ta可以在聊天中途决定给你打电话、轻轻挂断、错过时留言，
 并且听见你**怎么说**——而不只是说了什么。
@@ -68,6 +68,14 @@ Ta可以在聊天中途决定给你打电话、轻轻挂断、错过时留言，
 - [librosa](https://github.com/librosa/librosa) —— 声学特征提取
 - [hervoice](https://github.com/fishisfish0614/hervoice)（fishisfish0614）—— "她怎么说和她说了什么同样重要"这个思路的启发
 - [ElevenLabs](https://elevenlabs.io) —— TTS（商业服务，自备密钥）
+
+## 许可
+
+- 代码：[PolyForm Noncommercial 1.0.0](LICENSE)。
+- 文档与媒体：[CC BY-NC 4.0](LICENSE-CONTENT)。
+- 商业使用须另行取得书面授权，请联系 [Cheiineeey](https://github.com/Cheiineeey)。
+
+适用范围与旧版本说明见 [LICENSING.md](LICENSING.md)。
 
 ## 免责声明
 

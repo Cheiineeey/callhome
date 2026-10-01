@@ -2,7 +2,7 @@
 
 # 📞 Callhome
 
-**An open-source voice-call stack for AI companions.**
+**A source-available voice-call stack for AI companions.**
 
 Your companion can call you, hang up gently, leave voicemails when they miss you,
 and hear *how* you speak — not just what you say.
@@ -84,6 +84,14 @@ Standing on these shoulders:
 - [librosa](https://github.com/librosa/librosa) — acoustic feature extraction
 - [hervoice](https://github.com/fishisfish0614/hervoice) by fishisfish0614 — the idea that *how* she speaks matters as much as what she says
 - [ElevenLabs](https://elevenlabs.io) — TTS (commercial service; bring your own key)
+
+## License
+
+- Software: [PolyForm Noncommercial 1.0.0](LICENSE).
+- Documentation and media: [CC BY-NC 4.0](LICENSE-CONTENT).
+- Commercial use requires a separate written license. Contact [Cheiineeey](https://github.com/Cheiineeey).
+
+See [LICENSING.md](LICENSING.md) for scope and prior-version details.
 
 ## Disclaimer
 
