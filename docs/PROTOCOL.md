@@ -27,14 +27,15 @@ Full write-up, including the six places WebKit diverges from the spec and the me
 
 Client polls `GET /api/call/invite` (~8s; also immediately after each reply finishes, and immediately when the service worker forwards a call push). A `pending` invite renders the ringing card; the response carries `expires_at` so the card dismisses on the server's real deadline rather than a constant baked into the client.
 
-**Expiry → voicemail.** On the poll that discovers expiry, the server writes a message into the pinned chat session:
+**Expiry → voicemail.** A timer started with the invite fires at `expires_at + 2s` (don't rely on a client poll to discover expiry; native clients never poll). If the invite is still `pending`:
 
-```
-📞 Missed call
-Voicemail: I didn't catch you. {reason} — no rush, talk to me when you're back.
-```
+1. Mark it `expired` and write an **event card** with the fact only: `📞 Missed call` (or `📹 Missed video call`). No reason, no template text.
+2. Give the companion a turn of its own, with a one-off prompt: *it rang out; you may leave a voice message (one or two sentences, like a voicemail box) or leave nothing; do nothing else this turn.* What it says lands in chat as a voice note.
+3. Send one regular alert push. VoIP pushes go out with `apns-expiration: 0` and are never stored, so a phone that was offline while it rang would otherwise never know.
 
-The call that wasn't answered still says something. This is the emotional core of the protocol.
+A decline is not a missed call: different card, no voicemail.
+
+v1 wrote a fixed template here ("I didn't catch you. {reason} — no rush…"). Read twice, a template is a machine talking. The call that wasn't answered still gets a chance to say something, and now the companion decides whether it does. This is the emotional core of the protocol. Walls and history: [SINCE_THE_PWA.md §1](SINCE_THE_PWA.md#1-voicemail-second-version).
 
 ## Answering
 
