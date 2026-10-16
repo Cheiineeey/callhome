@@ -1,7 +1,6 @@
-import os
 #!/usr/bin/env python3
 """callhome stt-service — SenseVoice + librosa. Transcription, emotion tags, and tone cues in one local endpoint."""
-import json, uuid, time, re, traceback
+import os, json, uuid, time, re, traceback
 from pathlib import Path
 from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
 from urllib.parse import urlparse
@@ -106,24 +105,29 @@ def _features(p: Path, text: str = ""):
         return {}
 
 def parse_multipart(body: bytes, ctype: str):
+    """-> (filename, audio bytes, {plain form fields})"""
     boundary = None
     for part in ctype.split(";"):
         part = part.strip()
         if part.startswith("boundary="):
             boundary = part[9:].strip('"')
     if not boundary: raise ValueError("no boundary")
+    fn, fb, fields = None, b"", {}
     for raw in body.split(b"--"+boundary.encode())[1:]:
         if raw.strip() in (b"", b"--") or raw.startswith(b"--"): continue
         if b"\r\n\r\n" not in raw: continue
-        head, fb = raw.split(b"\r\n\r\n", 1)
-        if b"filename" not in head: continue
-        fn = "upload.webm"
-        m = re.search(rb'filename="([^"]*)"', head)
-        if m: fn = m.group(1).decode("utf-8","replace")
-        fb = fb.rstrip(b"\r\n")
-        if fb.endswith(b"--"): fb = fb[:-2].rstrip(b"\r\n")
-        return fn, fb
-    return None, b""
+        head, val = raw.split(b"\r\n\r\n", 1)
+        val = val.rstrip(b"\r\n")
+        if val.endswith(b"--"): val = val[:-2].rstrip(b"\r\n")
+        if b"filename" in head:
+            fn = "upload.webm"
+            m = re.search(rb'filename="([^"]*)"', head)
+            if m: fn = m.group(1).decode("utf-8","replace")
+            fb = val
+        else:
+            nm = re.search(rb'name="([^"]*)"', head)
+            if nm: fields[nm.group(1).decode("utf-8","replace")] = val.decode("utf-8","replace")
+    return fn, fb, fields
 
 class H(BaseHTTPRequestHandler):
     protocol_version = "HTTP/1.1"
@@ -146,7 +150,7 @@ class H(BaseHTTPRequestHandler):
         if path == "/transcribe":
             # one-shot: multipart audio in → text+emotion out
             try:
-                fn, ab = parse_multipart(body, self.headers.get("Content-Type",""))
+                fn, ab, fields = parse_multipart(body, self.headers.get("Content-Type",""))
             except Exception as e:
                 return self._json({"error": f"multipart: {e}"}, 400)
             if not ab: return self._json({"error":"no audio"}, 400)
@@ -160,7 +164,11 @@ class H(BaseHTTPRequestHandler):
             # describe before remember — a clip must not be ranked against a
             # distribution that already contains it
             tone_str, tone_dbg = tone.describe(feats)
-            tone.remember(feats)
+            # learn=0 for anything that isn't her live voice (test clips, video
+            # soundtracks). Every clip you POST is folded into the baseline;
+            # one test file from a speaker is a stranger in her distribution.
+            if fields.get("learn", "1") != "0":
+                tone.remember(feats)
             r["features"] = feats
             r["tone"] = tone_str
             r["tone_debug"] = tone_dbg
