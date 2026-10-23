@@ -86,7 +86,9 @@ Standing on these shoulders:
 - [SenseVoice](https://github.com/FunAudioLLM/SenseVoice) / [FunASR](https://github.com/modelscope/FunASR) — speech recognition & emotion tags (check model license separately; weights not distributed here)
 - [librosa](https://github.com/librosa/librosa) — acoustic feature extraction
 - [hervoice](https://github.com/fishisfish0614/hervoice) by fishisfish0614 — the idea that *how* she speaks matters as much as what she says
+- [aria-duet / ai-hears-your-body](https://aria-duet.github.io/ai-hears-your-body) — hearing her body, not only her words: the three-condition approach behind `body.py`, and the reason the phone listens to the room too
 - [ElevenLabs](https://elevenlabs.io) — TTS (commercial service; bring your own key)
+- [Tencent Cloud ASR](https://cloud.tencent.com/product/asr) — optional mixed-language transcription (commercial service; bring your own key)
 
 ## License
 

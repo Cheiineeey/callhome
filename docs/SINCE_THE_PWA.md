@@ -218,7 +218,9 @@ a call like a slow chat.
   🟡 Thresholds not yet calibrated on real recordings.
 
 ### 3.3 Sounds around her: the phone listens too
-The server only hears clips the client uploads, and only her voice in them. For
+This extends the idea from
+[aria-duet / ai-hears-your-body](https://aria-duet.github.io/ai-hears-your-body)
+past her voice. The server only hears clips the client uploads, and only her voice in them. For
 the room around her (water, a zipper, the dog, a knock) the phone classifies the
 mic stream itself with Apple's `SoundAnalysis` (`SNClassifySoundRequest(.version1)`,
 ~300 labels, 1.5s windows, 50% overlap). Mapped labels become the same
@@ -260,6 +262,16 @@ through the speaker and get reported as hers.
 - **Fix.** Remember the format the analyzer was built with, and rebuild it when
   a buffer arrives in a different format. Bluetooth mics also apply their own
   noise reduction, so expect less from them anyway. 🟡
+
+#### 3.3.4 🔴 "I can hear the rain" (no, it couldn't)
+- **Symptom.** On a walk, the companion said twice that it could hear the rain.
+  No `〔heard: …〕` tag had arrived all call; the classifier had heard nothing.
+- **Cause.** Once the call rules say "you may hear sounds around her", the model
+  fills the gap from context (she's outdoors, it's windy) and states it as hearing.
+- **Fix.** The rule has to say both halves: react to `〔heard: …〕` tags, and
+  **never claim to hear anything there's no tag for**; ask instead. Detection
+  will be wrong sometimes; the model making it up is worse, because she can't
+  tell the difference. 📖 Not in our gateway yet; the rule only covers the first half.
 
 ### 3.4 Mixed Chinese and English came back as homophones
 - **Symptom.** She switches languages mid-sentence. The English half came back

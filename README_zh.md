@@ -70,7 +70,9 @@ Ta可以在聊天中途决定给你打电话、轻轻挂断、错过时留言，
 - [SenseVoice](https://github.com/FunAudioLLM/SenseVoice) / [FunASR](https://github.com/modelscope/FunASR) —— 语音识别与情绪标签（模型许可证请自行查阅，本仓库不分发权重）
 - [librosa](https://github.com/librosa/librosa) —— 声学特征提取
 - [hervoice](https://github.com/fishisfish0614/hervoice)（fishisfish0614）—— "她怎么说和她说了什么同样重要"这个思路的启发
+- [aria-duet / ai-hears-your-body](https://aria-duet.github.io/ai-hears-your-body) —— 不只听Ta说的话，也听Ta的身体：`body.py` 的三条判据照这篇来，手机也去听周围的声音也是从这篇起的念头
 - [ElevenLabs](https://elevenlabs.io) —— TTS（商业服务，自备密钥）
+- [腾讯云语音识别](https://cloud.tencent.com/product/asr) —— 可选的中英混说转写（商业服务，自备密钥）
 
 ## 许可
 
