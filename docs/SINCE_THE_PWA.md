@@ -271,7 +271,7 @@ through the speaker and get reported as hers.
 - **Fix.** The rule has to say both halves: react to `〔heard: …〕` tags, and
   **never claim to hear anything there's no tag for**; ask instead. Detection
   will be wrong sometimes; the model making it up is worse, because she can't
-  tell the difference. 📖 Not in our gateway yet; the rule only covers the first half.
+  tell the difference. 🟡 In our gateway since late October; not yet seen in a call.
 
 ### 3.4 Mixed Chinese and English came back as homophones
 - **Symptom.** She switches languages mid-sentence. The English half came back
