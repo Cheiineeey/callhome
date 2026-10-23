@@ -45,8 +45,8 @@ Ta可以在聊天中途决定给你打电话、轻轻挂断、错过时留言，
 
 ## 目前仓库里有什么
 
-- **`stt-service/`** —— 现在就能跑：SenseVoice + librosa 一体端点（转写+情绪+语气，语气跟个人基线比）。测试音频记得带 `learn=0`，不然会混进Ta的基线
-- **[`docs/SINCE_THE_PWA.md`](docs/SINCE_THE_PWA.md)** —— 三个月后、换成原生 app：留言第二版、回声、准备时间从44秒压到0.8秒、连说两句、咳嗽、耳机。每一条都按现象 · 根因 · 修法写，标明哪些验过哪些没验（英文）
+- **`stt-service/`** —— 现在就能跑：SenseVoice + librosa 一体端点（转写+情绪+语气，语气跟个人基线比）。测试音频记得带 `learn=0`，不然会混进Ta的基线。可选：中英夹着说的字交给腾讯云识别（`cloud_asr.py`，不配钥匙就不启用）；通话里没字的声音（呻吟、喘、咳嗽）由 `body.py` 判
+- **[`docs/SINCE_THE_PWA.md`](docs/SINCE_THE_PWA.md)** —— 三个月后、换成原生 app：留言第二版、回声、准备时间从44秒压到0.8秒、连说两句、咳嗽、耳机、听Ta身边的声音、中英夹着说的转写。每一条都按现象 · 根因 · 修法写，标明哪些验过哪些没验（英文）
 - **[`docs/TONE_CUES.md`](docs/TONE_CUES.md)** —— 写死的声学阈值为什么不管用，85条真实录音实测；以及要不要把音频交给多模态模型的老实话
 - **[`docs/PROTOCOL.md`](docs/PROTOCOL.md)** —— 完整协议：拨号/挂断/勿扰暗号、留言、升级拨号、参数调校表
 - **`gateway-reference/`** —— 从生产环境抽出的带注释参考实现，含响铃节奏控制
@@ -70,7 +70,9 @@ Ta可以在聊天中途决定给你打电话、轻轻挂断、错过时留言，
 - [SenseVoice](https://github.com/FunAudioLLM/SenseVoice) / [FunASR](https://github.com/modelscope/FunASR) —— 语音识别与情绪标签（模型许可证请自行查阅，本仓库不分发权重）
 - [librosa](https://github.com/librosa/librosa) —— 声学特征提取
 - [hervoice](https://github.com/fishisfish0614/hervoice)（fishisfish0614）—— "她怎么说和她说了什么同样重要"这个思路的启发
+- [aria-duet / ai-hears-your-body](https://aria-duet.github.io/ai-hears-your-body) —— 不只听Ta说的话，也听Ta的身体：`body.py` 的三条判据照这篇来，手机也去听周围的声音也是从这篇起的念头
 - [ElevenLabs](https://elevenlabs.io) —— TTS（商业服务，自备密钥）
+- [腾讯云语音识别](https://cloud.tencent.com/product/asr) —— 可选的中英混说转写（商业服务，自备密钥）
 
 ## 许可
 
