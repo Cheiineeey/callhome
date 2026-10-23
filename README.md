@@ -61,8 +61,8 @@ Browser (PWA)                    Server (self-hosted)
 
 ## What is here today
 
-- **`stt-service/`** — runnable now: SenseVoice + librosa in one endpoint (transcription + emotion + tone cues, ranked against a personal baseline). Send `learn=0` with test clips so they stay out of the baseline
-- **[`docs/SINCE_THE_PWA.md`](docs/SINCE_THE_PWA.md)** — three months later, in a native app: voicemail v2, echo, a 44s→0.8s latency fix, two sentences in a row, coughs, headphones. Every wall written as symptom · cause · fix, with what's verified and what isn't
+- **`stt-service/`** — runnable now: SenseVoice + librosa in one endpoint (transcription + emotion + tone cues, ranked against a personal baseline). Send `learn=0` with test clips so they stay out of the baseline. Optional: words from Tencent Cloud ASR for mixed Chinese/English (`cloud_asr.py`, off without keys), and sounds without words (moans, breathing, coughs) for call audio (`body.py`)
+- **[`docs/SINCE_THE_PWA.md`](docs/SINCE_THE_PWA.md)** — three months later, in a native app: voicemail v2, echo, a 44s→0.8s latency fix, two sentences in a row, coughs, headphones, hearing the room around her, mixed-language transcription. Every wall written as symptom · cause · fix, with what's verified and what isn't
 - **[`docs/TONE_CUES.md`](docs/TONE_CUES.md)** — why fixed acoustic thresholds fail, measured on 85 real recordings; and an honest note on sending audio to a multimodal model instead
 - **[`docs/PROTOCOL.md`](docs/PROTOCOL.md)** — the full marker & invite protocol: dial, hangup, DND, voicemail, escalation, call records
 - **`gateway-reference/`** — annotated production extracts of the marker layer, plus the ring burst

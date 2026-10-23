@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 """callhome stt-service — SenseVoice + librosa. Transcription, emotion tags, and tone cues in one local endpoint."""
-import os, json, uuid, time, re, traceback
+import os, json, uuid, time, re, threading, traceback
 from pathlib import Path
 from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
 from urllib.parse import urlparse
 
 import tone      # tone cues from a rolling personal baseline, not fixed constants
+import cloud_asr # optional: words from Tencent Cloud (mixed zh/en); no-op without keys
+import body as bodysnd  # sounds without words, call audio only. NOT `import body` — see body.py
 
 BASE = Path(__file__).parent.resolve()
 UPLOADS = BASE / "uploads"
@@ -25,8 +27,29 @@ except Exception as e:
 
 EMO = {"<|HAPPY|>":"happy","<|SAD|>":"sad","<|ANGRY|>":"angry","<|NEUTRAL|>":"neutral",
        "<|SURPRISED|>":"surprised","<|FEARFUL|>":"fearful","<|DISGUSTED|>":"disgusted"}
+# SenseVoice tags sound events in the same output as emotion. The first version
+# stripped them together with the emotion tags: they were heard and then thrown away.
+EVENTS = {"BGM": "music", "Laughter": "laughter", "Applause": "applause", "Cry": "crying",
+          "Cough": "cough", "Sneeze": "sneeze"}
 
 def transcribe(p: Path):
+    """Cloud ASR (if configured) and SenseVoice run in parallel. Words come from the
+    cloud when it answers within 6s; emotion and events always come from SenseVoice."""
+    box = {}
+    th = threading.Thread(target=lambda: box.setdefault("tc", cloud_asr.transcribe(p)), daemon=True)
+    th.start()
+    r = _transcribe_local(p)
+    th.join(timeout=6)
+    tc = box.get("tc")
+    if tc is not None:
+        r["text_local"] = r.get("text", "")
+        r["text"], r["asr"] = tc[0], "cloud/" + tc[1]
+        r.pop("error", None)
+    else:
+        r["asr"] = "local"
+    return r
+
+def _transcribe_local(p: Path):
     if not LOADED:
         return {"text":"", "emotion":"neutral", "error":"model not loaded"}
     try:
@@ -34,8 +57,12 @@ def transcribe(p: Path):
                              batch_size_s=60, merge_vad=True, merge_length_s=15)
         raw = res[0].get("text","") if res else ""
         emotion = next((v for k,v in EMO.items() if k in raw), "neutral")
+        events = []
+        for tag in re.findall(r"<\|([^|]+)\|>", raw):
+            ev = EVENTS.get(tag)
+            if ev and ev not in events: events.append(ev)
         text = re.sub(r"<\|[^|]+\|>", "", raw).strip()
-        return {"text": text, "emotion": emotion}
+        return {"text": text, "emotion": emotion, "events": events}
     except Exception as e:
         traceback.print_exc()
         return {"text":"", "emotion":"neutral", "error":str(e)}
@@ -172,9 +199,13 @@ class H(BaseHTTPRequestHandler):
             r["features"] = feats
             r["tone"] = tone_str
             r["tone_debug"] = tone_dbg
+            # source=call → also look for sounds without words (body.py)
+            if fields.get("source") == "call":
+                r["sounds"], _bd = bodysnd.detect(dest, r.get("text", ""), r.get("events") or [])
+                if _bd or r["sounds"]: bodysnd.log(dest.name, r.get("text", ""), r["sounds"], _bd)
             r["elapsed_s"] = round(time.time()-t0, 2)
             r["filename"] = dest.name
-            print(f"[stt] {dest.name} -> {r.get('emotion')} tone={r.get('tone','')} ({r['elapsed_s']}s)", flush=True)
+            print(f"[stt] {dest.name} [{r.get('asr')}] -> {r.get('emotion')} tone={r.get('tone','')} ({r['elapsed_s']}s)", flush=True)
             self._json(r)
         else:
             self._json({"error":"not found"}, 404)

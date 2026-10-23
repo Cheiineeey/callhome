@@ -23,8 +23,8 @@ Status marks, same as everywhere else:
 ## Contents
 
 1. [Voicemail, second version](#1-voicemail-second-version)
-2. [The turn loop](#2-the-turn-loop) — echo, latency, two sentences in a row, coughs, tools
-3. [Hearing her](#3-hearing-her) — the baseline, sounds without words
+2. [The turn loop](#2-the-turn-loop) — echo, latency, two sentences in a row, coughs, tools, stage tags read aloud
+3. [Hearing her](#3-hearing-her) — the baseline, sounds without words, sounds around her, mixed-language transcription, emotion labels
 4. [Hanging up](#4-hanging-up)
 5. [Audio route](#5-audio-route)
 
@@ -144,6 +144,12 @@ a call like a slow chat.
   merges consecutive user messages). Once it has started speaking, queue as usual.
   Known gap: if the old turn finishes in the window between append and run,
   the new one may be judged "already answered". 🟡
+- **Later change.** Cancelling every unanswered turn went too far: when she adds
+  a separate thought half a minute later, throwing away the reply in progress
+  makes the companion slower, not smarter. Now only cancel when she starts
+  speaking again **within 3 seconds** of her last utterance being sent (she
+  hadn't finished). After that, the new utterance waits and is answered right
+  after the current reply plays. 🟡
 
 ### 2.6 A cough must not cancel a turn
 - **Symptom.** She coughs, the turn is cancelled, and the companion goes quiet.
@@ -167,6 +173,18 @@ a call like a slow chat.
   extended thinking on.
 - **Fix.** Strip thinking on the call path explicitly, and log when that happens. ✅
 
+### 2.9 🔴 Stage tags read aloud
+- **Symptom.** In calls the companion said "closer… right ear…" out loud.
+- **Cause.** Voice messages support position tags like `【right ear】` / `【closer】`
+  for a binaural render. Calls don't do the binaural render, and the call client's
+  text cleanup removed the **brackets** but kept the words inside them. The TTS
+  read whatever was left.
+- **Fix.** On every TTS path that doesn't consume a tag, remove the whole tag
+  (bracket **and** word), before any generic punctuation cleanup. On the server,
+  also catch the bare words at the start of a clause, since an old client may
+  already have stripped the brackets. Don't strip them anywhere else: "I want to
+  be closer" is a real sentence. 🟡
+
 ---
 
 ## 3. Hearing her
@@ -178,6 +196,12 @@ a call like a slow chat.
   distribution.
 - **Fix.** Send the form field `learn=0` for anything that isn't her live voice:
   tests, video soundtracks, replays. ✅
+- **Same thing, from inside.** A feature that checks the companion's own TTS
+  (transcribe what it just said, compare with the script) posted to the same
+  endpoint, and for weeks the *companion's* voice went into her baseline.
+  Opt-out flags get forgotten by the next feature you write. Safer: only learn
+  from a whitelist of sources (her live call, her voice messages) and ignore
+  everything else by default. ✅
 
 ### 3.2 Sounds without words were thrown away
 - **Symptom.** She made sounds without words during a call, and the companion
@@ -190,7 +214,84 @@ a call like a slow chat.
   `〔heard: …〕` to her turn and draw them as a hollow chip in the captions. It sits
   behind a switch that's off by default. The approach comes from
   [aria-duet / ai-hears-your-body](https://aria-duet.github.io/ai-hears-your-body).
+  Code: [`stt-service/body.py`](../stt-service/body.py), run only for `source=call`.
   🟡 Thresholds not yet calibrated on real recordings.
+
+### 3.3 Sounds around her: the phone listens too
+The server only hears clips the client uploads, and only her voice in them. For
+the room around her (water, a zipper, the dog, a knock) the phone classifies the
+mic stream itself with Apple's `SoundAnalysis` (`SNClassifySoundRequest(.version1)`,
+~300 labels, 1.5s windows, 50% overlap). Mapped labels become the same
+`〔heard: …〕` tags. They ride along with her next utterance, and a few
+(water, the dog, a knock, crying) may start a turn on their own if they persist.
+Pause it while the companion is speaking, or its own sound effects leak back
+through the speaker and get reported as hers.
+
+#### 3.3.1 🔴 A zipper came through, water never did
+- **Symptom.** Zippers and rustling showed up. Running water and splashing,
+  which were on the list, never did.
+- **Cause.** The call runs with voice processing on (`.voiceChat` +
+  `setVoiceProcessingEnabled(true)`), for echo cancellation. Its noise suppression
+  is built to remove steady background noise, and running water *is* steady
+  background noise. Short, sharp sounds like a zipper get through. What's left
+  of the water scores below the 0.6 confidence bar and rarely fills two windows.
+- **Fix (partial).** For the faint, steady sounds, lower the bar: 0.45 confidence,
+  one window is enough to attach, two hits in 6s to start a turn. Also map all of
+  Apple's water labels (`water`, `liquid_trickle_dribble`, `liquid_spraying`,
+  `liquid_filling_container`…); query `knownClassifications` instead of guessing names.
+  The real fix is a second input path without voice processing that only feeds
+  the classifier, at the cost of hearing the companion's own voice again. 🟡
+
+#### 3.3.2 🔴 Coughs had no path at all
+- **Symptom.** Never once a cough.
+- **Cause.** Two gaps, one on each side. The phone's label map didn't include
+  `cough`. And the server, whose SenseVoice does tag coughs, never got one: the
+  client discards clips shorter than 0.45s as mic bumps, and a cough is shorter
+  than that.
+- **Fix.** Classify `cough` / `sneeze` on the phone, at the lower bar from 3.3.1.
+  They never start a turn on their own (2.6). They ride along with her next
+  sentence. 🟡
+
+#### 3.3.3 🔴 Put on headphones and the classifier goes silent
+- **Symptom.** It worked one day and reported nothing at all from the next day on.
+- **Cause.** `SNAudioStreamAnalyzer` is created with the format of the first
+  buffer. Headphones switch to a Bluetooth mic, and the sample rate changes from
+  48k to 16k/24k. Buffers in the new format get no results and no error.
+- **Fix.** Remember the format the analyzer was built with, and rebuild it when
+  a buffer arrives in a different format. Bluetooth mics also apply their own
+  noise reduction, so expect less from them anyway. 🟡
+
+### 3.4 Mixed Chinese and English came back as homophones
+- **Symptom.** She switches languages mid-sentence. The English half came back
+  as Chinese characters that sound like it.
+- **Cause.** SenseVoice is called with `language="zh"`, so everything is heard
+  as Mandarin.
+- **Fix.** Take the words from a cloud engine that does code-switching (Tencent
+  Cloud ASR, `16k_zh-PY`: Mandarin + English + Cantonese), and keep SenseVoice
+  running in parallel for emotion tags and sound events, which the cloud engine
+  doesn't return. If the cloud doesn't answer within 6s, or fails, use the local
+  words. Code: [`stt-service/cloud_asr.py`](../stt-service/cloud_asr.py), a no-op
+  without keys. Notes:
+  - The one-sentence API (`SentenceRecognition`) rejects `16k_zh_large` and
+    `16k_zh_en` with `InvalidParameter`. Those engines exist, just not here.
+  - It doesn't take webm. Convert everything to 16k mono wav first.
+  - Max 60s per request. Longer clips fall back to local.
+  ✅ In production since mid-October. The speaker's verdict: "recognition is a lot
+  better than before."
+
+### 3.5 Don't put an LLM on the per-sentence call path
+- **Background.** SenseVoice's emotion tags (and emotion2vec's) are trained on
+  acted speech. A naturally soft voice comes back `sad` no matter what she says.
+  [hervoice](https://github.com/fishisfish0614/hervoice) showed this on hand-labelled
+  real recordings, and replaces the tags with the speaker's own labels, picked by
+  a fast LLM from the transcript, tone cues and sound events.
+- **Symptom.** We added that to calls too. Every reply came about 4 seconds later.
+- **Cause.** 17 of 27 sentences in one call hit the 4s timeout. An LLM round-trip
+  per utterance, *in series* before the turn can start, costs more than a call can
+  afford.
+- **Fix.** Labels stay on voice messages, where nobody is waiting. Calls use
+  SenseVoice + the tone cues and their simple veto rules. If you want labels in
+  calls, run them off the critical path and attach them to the *next* turn. ✅
 
 ---
 
